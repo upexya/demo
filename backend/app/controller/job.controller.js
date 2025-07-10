@@ -1,9 +1,12 @@
 const { v4: uuidv4 } = require("uuid");
 
-const User = require("../models/user.model");
 const { JOB_STATUS } = require("../constants/jobs");
 
-let jobs = {};
+const { Hyperbrowser } = require("@hyperbrowser/sdk");
+
+const hbClient = new Hyperbrowser({
+  apiKey: process.env.HYPERBROWSER_API_KEY,
+});
 
 exports.processJob = async (req, res) => {
   const { prompt } = req.body || {};
@@ -12,34 +15,31 @@ exports.processJob = async (req, res) => {
   }
 
   const id = uuidv4();
-  jobs[id] = {
-    id,
-    prompt,
-    status: JOB_STATUS.PENDING,
-  };
 
-  // processJob(id, prompt);
-
-  // return res.status(202).json({ id });
-  return res
-    .status(202)
-    .json({ message: "Job is being processed", id, prompt });
+  try {
+    const result = await invokeHyperbrowser(id, prompt);
+    return res
+      .status(202)
+      .json({ id, prompt, message: "Job is being processed", result });
+  } catch (err) {
+    console.error("Error invoking Hyperbrowser:", err);
+    return res
+      .status(500)
+      .json({ message: "Error processing job", error: err.message });
+  }
 };
 
-async function processJob(id, prompt) {
+async function invokeHyperbrowser(id, prompt) {
   try {
-    const response = await axios.post(
-      "https://api.hyperagent.ai/v1/execute",
-      { instruction: prompt },
-      { headers: { Authorization: `Bearer YOUR_HYPERAGENT_API_KEY` } }
-    );
-    jobs[id].status = "Complete";
-    jobs[id].result = {
-      success: true,
-      output: response.data?.output || "No output",
-    };
+    console.log("Invoking Hyperbrowser with ID:", prompt);
+    const result = await hbClient.agents.hyperAgent.startAndWait({
+      task: prompt,
+    });
+
+    console.log("result", result);
+    console.log("Hyperbrowser result:", result?.data?.finalResult);
+    return result?.data?.finalResult;
   } catch (err) {
-    jobs[id].status = "Complete";
-    jobs[id].result = { success: false, output: err.message };
+    console.error(`Encountered error: ${err}`);
   }
 }
