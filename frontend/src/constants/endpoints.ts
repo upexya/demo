@@ -1,5 +1,5 @@
 const endpoints = {
-  user: "/api/user",
+  jobs: "/api/jobs",
 };
 
 export default endpoints;
