@@ -13,3 +13,16 @@ export async function processJobs(prompt: string) {
     throw new Error(error?.response?.data?.message);
   }
 }
+
+export async function getJobById(jobId: string) {
+  if (!jobId) {
+    throw new Error("Job ID is required");
+  }
+
+  try {
+    const response = await axiosInstance.get(`${endpoints.jobs}/${jobId}`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message);
+  }
+}
