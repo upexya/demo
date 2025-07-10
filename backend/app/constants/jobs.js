@@ -1,6 +1,5 @@
 exports.JOB_STATUS = {
-  PENDING: "pending",
-  PROCESSING: "processing",
-  COMPLETED: "completed",
-  FAILED: "failed",
+  PENDING: "PENDING",
+  COMPLETE: "COMPLETE",
+  FAILED: "FAILED",
 };
